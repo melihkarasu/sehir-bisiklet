@@ -16,23 +16,23 @@ let bikeMap = null;
           }).addTo(bikeMap);
         }
 
+        
         async function loadNetworks() {
           try {
-            const res = await fetch('/api/bisiklet/networks');
+            // CityBikes API v2 doğrudan çağrı
+            const res = await fetch('https://api.citybik.es/v2/networks');
+            if (!res.ok) throw new Error('Şebeke verileri alınamadı');
             const data = await res.json();
-            if (!data.success) throw new Error(data.error);
-
+            
             allNetworks = data.networks || [];
             const select = document.getElementById('select-network');
 
-            // Şehir adına göre sırala
             allNetworks.sort((a, b) => a.city.localeCompare(b.city));
 
             select.innerHTML = allNetworks.map(n => `
               <option value="${n.id}">${n.city} - ${n.name} (${n.country})</option>
             `).join('');
 
-            // Varsayılan: İstanbul İsbike veya ilk ağ
             const defaultNet = allNetworks.find(n => n.id === 'isbike' || n.city.toLowerCase().includes('istanbul')) || allNetworks[0];
             if (defaultNet) {
               select.value = defaultNet.id;
@@ -43,23 +43,25 @@ let bikeMap = null;
           }
         }
 
+
+        
         async function loadNetworkStations(netId) {
           document.getElementById('bike-net-status').innerText = 'Duraklar Yükleniyor...';
 
           try {
-            const res = await fetch(`/api/bisiklet/network/${encodeURIComponent(netId)}`);
+            // CityBikes API v2 doğrudan çağrı
+            const res = await fetch(`https://api.citybik.es/v2/networks/${encodeURIComponent(netId)}`);
+            if (!res.ok) throw new Error('Durak verileri alınamadı');
             const data = await res.json();
-            if (!data.success) throw new Error(data.error);
-
+            
             currentStations = data.stations || [];
             const net = data.network || {};
 
-            // İstatistikler
             let totalBikes = 0;
             let totalEmpty = 0;
             currentStations.forEach(s => {
-              totalBikes += (s.freeBikes || 0);
-              totalEmpty += (s.emptySlots || 0);
+              totalBikes += (s.free_bikes || 0);
+              totalEmpty += (s.empty_slots || 0);
             });
 
             document.getElementById('stat-total-stations').innerText = currentStations.length;
@@ -69,13 +71,14 @@ let bikeMap = null;
             document.getElementById('stat-country-label').innerText = (net.country || '') + ' Şebekesi';
             document.getElementById('bike-net-status').innerText = 'Canlı Duraklar Açık';
 
-            // Harita Markerlarını Temizle & Çiz
             renderMapMarkers(net.latitude, net.longitude);
             renderStationList(currentStations);
           } catch(err) {
             document.getElementById('bike-net-status').innerText = 'Bağlantı Hatası';
+            console.error('Station Load Error:', err);
           }
         }
+
 
         function renderMapMarkers(centerLat, centerLon) {
           // Eski markerları temizle
@@ -87,7 +90,7 @@ let bikeMap = null;
             currentStations.forEach(s => {
               if (!s.latitude || !s.longitude) return;
 
-              const bikes = s.freeBikes || 0;
+              const bikes = s.free_bikes || 0;
               let color = '#10b981'; // yeşil
               if (bikes === 0) color = '#f43f5e'; // kırmızı
               else if (bikes <= 4) color = '#f59e0b'; // sarı
@@ -100,7 +103,7 @@ let bikeMap = null;
 
               const marker = L.marker([s.latitude, s.longitude], { icon: customIcon })
                 .addTo(bikeMap)
-                .bindPopup(`<strong>${s.name}</strong><br>🚲 Müsait: ${s.freeBikes}<br>🅿️ Boş Park: ${s.emptySlots || 0}`);
+                .bindPopup(`<strong>${s.name}</strong><br>🚲 Müsait: ${s.free_bikes}<br>🅿️ Boş Park: ${s.empty_slots || 0}`);
 
               marker.on('click', () => {
                 selectStation(s);
@@ -121,9 +124,9 @@ let bikeMap = null;
         function selectStation(s) {
           activeSelectedStation = s;
           document.getElementById('sel-station-name').innerText = s.name;
-          document.getElementById('sel-free-bikes').innerText = s.freeBikes;
-          document.getElementById('sel-empty-slots').innerText = s.emptySlots !== null ? s.emptySlots : 'N/A';
-          document.getElementById('sel-status').innerText = s.freeBikes > 0 ? 'Müsait Bisiklet Var' : 'Bisiklet Tükendi';
+          document.getElementById('sel-free-bikes').innerText = s.free_bikes;
+          document.getElementById('sel-empty-slots').innerText = s.empty_slots !== null ? s.empty_slots : 'N/A';
+          document.getElementById('sel-status').innerText = s.free_bikes > 0 ? 'Müsait Bisiklet Var' : 'Bisiklet Tükendi';
         }
 
         function centerOnSelectedStation() {
@@ -145,9 +148,9 @@ let bikeMap = null;
             <div onclick='selectStationAndCenter(${JSON.stringify(s)})' class="p-2.5 rounded-lg text-mistral-ink font-boldbg-mistral-cream-light hover:bg-mistral-cream border border-mistral-hairline cursor-pointer flex items-center justify-between transition">
               <span class="font-medium text-mistral-ink truncate max-w-[170px]">${s.name}</span>
               <div class="flex items-center gap-1 text-[11px] font-bold">
-                <span class="text-emerald-700">🚲 ${s.freeBikes}</span>
+                <span class="text-emerald-700">🚲 ${s.free_bikes}</span>
                 <span class="text-mistral-stone">•</span>
-                <span class="text-mistral-slate">🅿️ ${s.emptySlots || 0}</span>
+                <span class="text-mistral-slate">🅿️ ${s.empty_slots || 0}</span>
               </div>
             </div>
           `).join('');
@@ -179,3 +182,13 @@ let bikeMap = null;
           initBikeMap();
           loadNetworks();
         });
+
+
+window.loadNetworks = loadNetworks;
+window.loadNetworkStations = loadNetworkStations;
+window.onNetworkChange = onNetworkChange;
+window.selectCityById = selectCityById;
+window.filterStationList = filterStationList;
+window.searchCity = searchCity;
+window.openModal = openModal;
+window.closeModal = closeModal;
