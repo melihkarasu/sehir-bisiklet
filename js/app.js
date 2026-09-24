@@ -17,9 +17,9 @@ let bikeMap = null;
         }
 
         
+        
         async function loadNetworks() {
           try {
-            // CityBikes API v2 doğrudan çağrı
             const res = await fetch('https://api.citybik.es/v2/networks');
             if (!res.ok) throw new Error('Şebeke verileri alınamadı');
             const data = await res.json();
@@ -27,13 +27,20 @@ let bikeMap = null;
             allNetworks = data.networks || [];
             const select = document.getElementById('select-network');
 
-            allNetworks.sort((a, b) => a.city.localeCompare(b.city));
+            // CityBikes API'sinde şehir bilgisi n.location.city içindedir
+            allNetworks.sort((a, b) => {
+              const cityA = (a.location && a.location.city) ? a.location.city : '';
+              const cityB = (b.location && b.location.city) ? b.location.city : '';
+              return cityA.localeCompare(cityB);
+            });
 
-            select.innerHTML = allNetworks.map(n => `
-              <option value="${n.id}">${n.city} - ${n.name} (${n.country})</option>
-            `).join('');
+            select.innerHTML = allNetworks.map(n => {
+              const city = (n.location && n.location.city) ? n.location.city : 'Bilinmiyor';
+              const country = (n.location && n.location.country) ? n.location.country : '';
+              return `<option value="${n.id}">${city} - ${n.name} (${country})</option>`;
+            }).join('');
 
-            const defaultNet = allNetworks.find(n => n.id === 'isbike' || n.city.toLowerCase().includes('istanbul')) || allNetworks[0];
+            const defaultNet = allNetworks.find(n => n.id === 'isbike' || (n.location && n.location.city && n.location.city.toLowerCase().includes('istanbul'))) || allNetworks[0];
             if (defaultNet) {
               select.value = defaultNet.id;
               loadNetworkStations(defaultNet.id);
@@ -44,18 +51,20 @@ let bikeMap = null;
         }
 
 
+
+        
         
         async function loadNetworkStations(netId) {
           document.getElementById('bike-net-status').innerText = 'Duraklar Yükleniyor...';
 
           try {
-            // CityBikes API v2 doğrudan çağrı
             const res = await fetch(`https://api.citybik.es/v2/networks/${encodeURIComponent(netId)}`);
             if (!res.ok) throw new Error('Durak verileri alınamadı');
             const data = await res.json();
             
             currentStations = data.stations || [];
             const net = data.network || {};
+            const loc = net.location || {};
 
             let totalBikes = 0;
             let totalEmpty = 0;
@@ -67,17 +76,18 @@ let bikeMap = null;
             document.getElementById('stat-total-stations').innerText = currentStations.length;
             document.getElementById('stat-free-bikes').innerText = Number(totalBikes).toLocaleString('tr-TR');
             document.getElementById('stat-empty-slots').innerText = Number(totalEmpty).toLocaleString('tr-TR');
-            document.getElementById('stat-city-label').innerText = net.city || net.name;
-            document.getElementById('stat-country-label').innerText = (net.country || '') + ' Şebekesi';
+            document.getElementById('stat-city-label').innerText = loc.city || net.name;
+            document.getElementById('stat-country-label').innerText = (loc.country || '') + ' Şebekesi';
             document.getElementById('bike-net-status').innerText = 'Canlı Duraklar Açık';
 
-            renderMapMarkers(net.latitude, net.longitude);
+            renderMapMarkers(loc.latitude, loc.longitude);
             renderStationList(currentStations);
           } catch(err) {
             document.getElementById('bike-net-status').innerText = 'Bağlantı Hatası';
             console.error('Station Load Error:', err);
           }
         }
+
 
 
         function renderMapMarkers(centerLat, centerLon) {
