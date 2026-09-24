@@ -3,14 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Şehir Bisiklet Rehberi - Standalone</title>
+  <title>Şehir Bisiklet Rehberi & Mobilite Radarı</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231c1917' stroke='%2344403c' stroke-width='1.5'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='-apple-system,BlinkMacSystemFont,Inter,sans-serif' font-weight='800' font-size='13' letter-spacing='-0.5'%3EMK%3C/text%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231c1917' stroke='%2344403c' stroke-width='1.5'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' fill='%23ffffff' font-family='-apple-system,BlinkMacSystemFont,Inter,sans-serif' font-weight='800' font-size='13' letter-spacing='-0.5'%3EMK%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="css/style.css">
   <style>
     :root {
       --mistral-ink: #1c1917;
@@ -18,32 +16,43 @@
       --mistral-stone: #a8a29e;
       --mistral-hairline: #e7e5e4;
       --mistral-cream: #f5f5f4;
+      --mistral-cream-deeper: #e7e5e4;
+      --mistral-cream-light: #fafaf9;
       --mistral-beige-deep: #d6d3d1;
       --mistral-orange: #fa520f;
       --mistral-orange-deep: #e04400;
-      --mistral-canvas: #0f172a;
     }
-    body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: var(--mistral-ink); }
-    h1, h2, h3, .font-editorial { font-family: 'Newsreader', serif; }
-    .font-mono { font-family: 'JetBrains Mono', monospace; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #fafaf9;
+      color: var(--mistral-ink);
+    }
+    h1, h2, h3, .font-editorial {
+      font-family: 'Newsreader', serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .bg-mistral-cream { background-color: var(--mistral-cream); }
+    .bg-mistral-cream-light { background-color: var(--mistral-cream-light); }
+    .bg-mistral-cream-deeper { background-color: var(--mistral-cream-deeper); }
     .text-mistral-ink { color: var(--mistral-ink); }
     .text-mistral-slate { color: var(--mistral-slate); }
     .text-mistral-stone { color: var(--mistral-stone); }
     .text-mistral-orange { color: var(--mistral-orange); }
-    .bg-mistral-cream { background-color: var(--mistral-cream); }
-    .bg-mistral-canvas { background-color: var(--mistral-canvas); }
     .border-mistral-hairline { border-color: var(--mistral-hairline); }
     .border-mistral-beige-deep { border-color: var(--mistral-beige-deep); }
+    .border-mistral-orange { border-color: var(--mistral-orange); }
   </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="p-4 sm:p-8">
   <div class="max-w-6xl mx-auto">
     <!-- Üst Başlık & Navigasyon -->
       <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div class="flex items-center gap-3">
-            <a href="https://github.com/melihkarasu" target="_blank" class="text-mistral-slate hover:text-mistral-orange transition text-sm flex items-center gap-1 font-medium">
-              &larr; GitHub Profiline Dön
+            <a href="/" class="text-mistral-slate hover:text-mistral-orange transition text-sm flex items-center gap-1 font-medium">
+              &larr; Vitrine Dön
             </a>
             <span class="text-mistral-hairline">|</span>
             <span class="px-2.5 py-0.5 rounded-full bg-mistral-cream text-mistral-ink border border-mistral-beige-deep text-xs font-semibold">Coğrafya, Doğa & Çevre</span>
@@ -170,6 +179,11 @@
         </div>
       </div>
   </div>
+
+  <footer class="mt-16 text-center text-xs text-mistral-stone border-t border-mistral-hairline pt-6">
+    <p>Açık Kaynak Standalone Sürüm • Veriler: <a href="https://citybik.es/" target="_blank" rel="noopener" class="underline hover:text-mistral-ink">CityBikes API</a> • <a href="https://github.com/public-apis/public-apis" target="_blank" rel="noopener" class="underline hover:text-mistral-ink">Public APIs</a></p>
+  </footer>
+
   <script src="js/app.js"></script>
 </body>
 </html>
