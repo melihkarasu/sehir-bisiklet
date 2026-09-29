@@ -221,10 +221,9 @@ function selectCityById(id) {
   let targetId = id;
 
   // CityBikes API mapping fallbacks for popular buttons
-  if (targetId === 'isbike') {
-    const tr = allNetworks.find(n => n.id.includes('antalya') || n.country === 'TR');
-    if (tr) targetId = tr.id;
-  } else if (targetId === 'velib-metropole') {
+  // Not: İstanbul (İsbike) CityBikes API'de mevcut DEĞİL (2026-09-29 doğrulandı; TR'de yalnızca
+  // baksi-antalya, baksi-cabis (Çanakkale) ve baksi-nilesplit (Nilüfer) var) — popüler buton doğrudan Antalya kullanır.
+  if (targetId === 'velib-metropole') {
     const fr = allNetworks.find(n => n.id === 'velib' || n.name.toLowerCase().includes('velib'));
     if (fr) targetId = fr.id;
   }
